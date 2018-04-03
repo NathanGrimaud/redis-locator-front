@@ -1,14 +1,27 @@
 <template>
   <div class="map">
-    <ol-map></ol-map>
+    <ol-map :center="coords"></ol-map>
   </div>
 </template>
 
 <script>
+import store from '../store';
 export default {
   name: 'Map',
-  props: {
-    coords: Object
+  computed: {
+    coords() {
+      return store.state.location;
+    }
+  },
+  mounted() {
+    navigator.geolocation.getCurrentPosition(location =>
+      this.move([location.coords.longitude, location.coords.latitude])
+    );
+  },
+  methods: {
+    move(coords) {
+      store.commit('move', coords);
+    }
   }
 };
 </script>
