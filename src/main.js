@@ -4,31 +4,34 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import './registerServiceWorker';
+import '../node_modules/node-snackbar/dist/snackbar.css';
+
 // vue-material
-import { MdButton, MdContent, MdTabs } from 'vue-material/dist/components';
+import {
+  MdButton,
+  MdContent,
+  MdTabs,
+  MdCard,
+  MdIcon,
+  MdBottomBar,
+  MdRipple,
+  MdField,
+  MdSnackbar
+} from 'vue-material/dist/components';
 import 'vue-material/dist/vue-material.min.css';
 // vue-openlayers
 import '../node_modules/openlayers/css/ol.css';
-import olMap from 'vue-openlayers/src/ol-map.vue';
-import olMarker from 'vue-openlayers/src/ol-marker.vue';
-import olBalloon from 'vue-openlayers/src/ol-balloon.vue';
-
+localStorage.setItem('token', null);
 Vue.config.productionTip = false;
 Vue.use(MdButton);
 Vue.use(MdContent);
 Vue.use(MdTabs);
-
-const VueOpenlayers = {
-  install: function(Vue, options) {
-    // wiring project components
-    Vue.component('ol-map', olMap);
-    Vue.component('ol-marker', olMarker);
-    Vue.component('ol-balloon', olBalloon);
-  }
-};
-
-Vue.use(VueOpenlayers);
-
+Vue.use(MdCard);
+Vue.use(MdBottomBar);
+Vue.use(MdIcon);
+Vue.use(MdRipple);
+Vue.use(MdField);
+Vue.use(MdSnackbar);
 new Vue({
   router,
   store,

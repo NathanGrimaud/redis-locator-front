@@ -1,7 +1,6 @@
 <template>
   <div class="home">
-    <img src="../assets/logo.png">
-    <Map/>
+    home
   </div>
 </template>
 
@@ -11,8 +10,6 @@ import Map from '@/components/Map';
 
 export default {
   name: 'home',
-  components: {
-    Map
-  }
+  components: {}
 };
 </script>

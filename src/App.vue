@@ -1,29 +1,44 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <map-view />
   </div>
 </template>
 
+<script>
+import store, { LOGOUT } from './store';
+import MapComponent from './components/Map.vue';
+export default {
+  name: 'App',
+  components: {
+    'map-view': MapComponent
+  },
+  methods: {
+    logout() {
+      store.dispatch(LOGOUT);
+    }
+  }
+};
+</script>
+
+
 <style lang="scss">
+@import '~vue-material/dist/theme/engine'; // Import the theme engine
+
+@include md-register-theme('default', (
+  primary: md-get-palette-color(indigo, A200), 
+  accent: md-get-palette-color(amber, A200),
+));
+
+@import '~vue-material/dist/theme/all'; // Apply the theme
+
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+  position: fixed;
+  height: 100%;
+  width: 100%;
 }
 </style>
