@@ -31,7 +31,6 @@ import Text from 'ol/style/text';
 import Fill from 'ol/style/fill';
 import Stroke from 'ol/style/stroke';
 import io from 'socket.io-client';
-
 function distance([lat1, lon1], [lat2, lon2]) {
   var p = 0.017453292519943295; // Math.PI / 180
   var c = Math.cos;
@@ -148,8 +147,8 @@ export default {
         if (!!store.state.socket) {
           const { radius, center } = getDistance(olmap);
           store.state.socket.emit('setPosition', {
-            long: center[1],
-            lat: center[0],
+            long: center[0],
+            lat: center[1],
             radius
           });
         }
@@ -178,7 +177,7 @@ export default {
                 socket.on('connect', () => {});
 
                 socket.on('addGeo', () => {
-                  getFriendsForViewPort(olmap);
+                  setTimeout(getFriendsForViewPort(olmap), 500);
                 });
               }
             })
