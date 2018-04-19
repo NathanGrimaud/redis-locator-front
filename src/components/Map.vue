@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import store, { CHECK_LOGIN, MOVE } from '../store';
+import store, { CHECK_LOGIN, MOVE, SET_SOCKET } from '../store';
 import Map from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
@@ -20,7 +20,7 @@ import Style from 'ol/style/style';
 import IconStyle from 'ol/style/icon';
 import SearchVue from './Search';
 import LoginVue from './Login';
-import { DPI, getDpi } from '../constants';
+import { DPI, getDpi, SOCKET_URL } from '../constants';
 import OSM from 'ol/source/osm';
 import XYZ from 'ol/source/xyz';
 import debounce from 'debounce';
@@ -30,6 +30,7 @@ import { postLocations } from '../services/geoloc';
 import Text from 'ol/style/text';
 import Fill from 'ol/style/fill';
 import Stroke from 'ol/style/stroke';
+import io from 'socket.io-client';
 
 function distance([lat1, lon1], [lat2, lon2]) {
   var p = 0.017453292519943295; // Math.PI / 180
@@ -39,7 +40,11 @@ function distance([lat1, lon1], [lat2, lon2]) {
   return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
 }
 
-const view = location => new View({ center: proj.fromLonLat(location), zoom: 12 });
+const view = location =>
+  new View({
+    center: proj.fromLonLat([-1.553621, 47.218371]),
+    zoom: 12
+  });
 const icon = 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-256.png';
 const layer = () =>
   new TileLayer({
@@ -48,7 +53,7 @@ const layer = () =>
         'https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZ3JpbXUiLCJhIjoiY2pnNWEzOGp3MjM2bDJ3cXBrMmdpdXIyNiJ9.ICBxpkWQfQa7rrfiBJ36Lg'
     })
   });
-/* new TileLayer({
+/*new TileLayer({
     source: new OSM({
       attributions: [
         'All maps © <a href="https://www.opencyclemap.org/">OpenCycleMap</a>',
@@ -77,16 +82,22 @@ function setPoint(position, location, olmap, vector, name = 'me') {
   });
   position.addFeature(feature);
 }
-
-function getFriendsForViewPort(olmap) {
+function getDistance(olmap) {
   const extents = olmap.getView().calculateExtent(olmap.getSize());
   const [x1, y1, x2, y2] = extents;
   const coords1 = proj.toLonLat([x1, y1]);
   const coords2 = proj.toLonLat([x2, y2]);
   const center = proj.toLonLat(olmap.getView().getCenter()).reverse();
   const distanceX1X2 = distance(coords1, coords2);
-  getFriends(center, distanceX1X2)
-    .then(() => {})
+  return { radius: distanceX1X2, center };
+}
+
+function getFriendsForViewPort(olmap) {
+  const { center, radius } = getDistance(olmap);
+  getFriends(center, radius)
+    .then(() => {
+      console.log('friends updated');
+    })
     .catch(err => console.log(err));
 }
 
@@ -136,37 +147,72 @@ export default {
       'change:resolution',
       debounce(function(event) {
         getFriendsForViewPort(olmap);
+        if (!!store.state.socket) {
+          const { radius, center } = getDistance(olmap);
+          console.log('send new position', {
+            long: center[1],
+            lat: center[0],
+            radius
+          });
+          store.state.socket.emit('setPosition', {
+            long: center[1],
+            lat: center[0],
+            radius
+          });
+        }
       }, 1000)
     );
 
-    navigator.geolocation.getCurrentPosition(
-      location => {
-        const coords = [location.coords.longitude, location.coords.latitude];
-        this.move(coords);
-        setPoint(position, coords, olmap, vector);
-        postLocations(coords);
-      },
-      err => console.log(err)
-    );
-    function getLocationAndSendIt() {
+    const getLocationAndSendIt = () => {
+      console.log('will send locations');
       navigator.geolocation.getCurrentPosition(
         location => {
           const coords = [location.coords.longitude, location.coords.latitude];
+          this.move(coords);
           setPoint(position, coords, olmap, vector);
-          postLocations(coords)
-            .then(result => console.log(result))
+          const { center, radius } = getDistance(olmap);
+          postLocations(coords, radius)
+            .then(result => {
+              if (store.state.socket === null) {
+                const name = result.description;
+                const socket = io(SOCKET_URL, {
+                  transports: ['polling'],
+                  query: `params={"username":"${name}","long":"${coords[1]}","lat":"'${
+                    coords[0]
+                  }","radius":"${parseInt(radius, 10)}"}`
+                });
+                console.log('commit socket');
+                store.commit(SET_SOCKET, socket);
+                console.log('wait socket');
+
+                socket.on('connect', () => {
+                  console.log('connected');
+                });
+
+                socket.on('addGeo', () => {
+                  console.log('hey ');
+                  getFriendsForViewPort(olmap);
+                });
+              }
+            })
             .catch(err => console.log(err));
           getFriendsForViewPort(olmap);
         },
         err => console.log(err)
       );
-    }
-    setInterval(getLocationAndSendIt, 60 * 1000);
-    getLocationAndSendIt();
+    };
 
     store.dispatch(CHECK_LOGIN).then(isLogged => {
       if (isLogged) this.$router.push('home');
     });
+
+    this.$store.watch(
+      state => this.$store.state.isLoggedIn,
+      newValue => {
+        getLocationAndSendIt();
+        setInterval(getLocationAndSendIt, 60 * 1000);
+      }
+    );
 
     this.$store.watch(
       state => this.$store.state.location,

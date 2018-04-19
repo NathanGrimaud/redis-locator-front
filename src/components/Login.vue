@@ -52,6 +52,7 @@ import store, { LOGIN, SET_USERNAME } from '../store';
 import router from '../router';
 import { AUTH_URL } from '../constants';
 import AccountVue from './Account';
+import Snackbar from 'node-snackbar';
 export default {
   name: 'Login',
   data: () => ({
@@ -84,7 +85,10 @@ export default {
           password: this.password,
           name: this.name
         })
-      }).then(response => {});
+      }).then(response => {
+        this.isRegistering = false;
+        Snackbar.show({ text: 'Account created !' });
+      });
     },
     login() {
       store
@@ -93,7 +97,11 @@ export default {
           this.$store.commit(SET_USERNAME, this.username);
           this.$router.push('/');
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          Snackbar.show({ text: 'Invalid credentials, please try again !' });
+          this.username = '';
+          this.password = '';
+        });
     },
     setActive() {
       this.isActive = !this.isActive;

@@ -70,6 +70,9 @@ const store = new Vuex.Store({
         },
         body: JSON.stringify(creds)
       }).then(response => {
+        if (response.status !== 200) {
+          throw new Error('invalid credentials');
+        }
         const token = response.headers.get('access-token');
         if (token !== null) {
           localStorage.setItem('token', token);

@@ -1,9 +1,7 @@
 import { AUTH_URL } from '../constants';
-import store, { SET_SOCKET } from '../store';
-import socket from 'socket.io-client';
-import { SOCKET_URL } from '../constants';
+import store from '../store';
 
-export function postLocations(locations) {
+export function postLocations(locations, distance) {
   if (!!store.state.token) {
     return fetch(`${AUTH_URL}/geo`, {
       method: 'post',
@@ -18,21 +16,7 @@ export function postLocations(locations) {
         y: locations[0],
         timestamp: new Date().getTime()
       })
-    })
-      .then(response => response.json())
-      .then(response => {
-        /*if (!!store.state.socket) {
-          const uuid = response.description;
-          const io = socket(SOCKET_URL, {
-            query: 'params={"uuid":"' + uuid + '", "username":"dns" }'
-          });
-          store.commit(SET_SOCKET, io);
-          io.on('connect', function() {
-            console.log('connected');
-          });
-        }*/
-        return response;
-      });
+    }).then(response => response.json());
   }
   return Promise.reject(new Error('You must be authenticated'));
 }
