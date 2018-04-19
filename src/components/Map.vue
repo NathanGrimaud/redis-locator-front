@@ -95,9 +95,7 @@ function getDistance(olmap) {
 function getFriendsForViewPort(olmap) {
   const { center, radius } = getDistance(olmap);
   getFriends(center, radius)
-    .then(() => {
-      console.log('friends updated');
-    })
+    .then(() => {})
     .catch(err => console.log(err));
 }
 
@@ -149,11 +147,6 @@ export default {
         getFriendsForViewPort(olmap);
         if (!!store.state.socket) {
           const { radius, center } = getDistance(olmap);
-          console.log('send new position', {
-            long: center[1],
-            lat: center[0],
-            radius
-          });
           store.state.socket.emit('setPosition', {
             long: center[1],
             lat: center[0],
@@ -164,7 +157,6 @@ export default {
     );
 
     const getLocationAndSendIt = () => {
-      console.log('will send locations');
       navigator.geolocation.getCurrentPosition(
         location => {
           const coords = [location.coords.longitude, location.coords.latitude];
@@ -181,16 +173,11 @@ export default {
                     coords[0]
                   }","radius":"${parseInt(radius, 10)}"}`
                 });
-                console.log('commit socket');
                 store.commit(SET_SOCKET, socket);
-                console.log('wait socket');
 
-                socket.on('connect', () => {
-                  console.log('connected');
-                });
+                socket.on('connect', () => {});
 
                 socket.on('addGeo', () => {
-                  console.log('hey ');
                   getFriendsForViewPort(olmap);
                 });
               }

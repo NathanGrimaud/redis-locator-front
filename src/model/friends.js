@@ -14,7 +14,6 @@ export function getFriends(location, distance) {
         };
       });
       if (!!friends) {
-        console.log('new ffriends', friends);
         store.commit(SET_FRIENDS, friends);
       }
     });
