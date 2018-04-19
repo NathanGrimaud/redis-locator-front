@@ -11,6 +11,8 @@ export const SET_MAP = 'SET_MAP';
 export const SET_FRIENDS = 'SET_FRIENDS';
 export const SET_USERNAME = 'SET_USERNAME';
 export const SET_TOKEN = 'SET_TOKEN';
+export const SET_SOCKET = 'SET_SOCKET';
+
 import proj from 'ol/proj';
 const store = new Vuex.Store({
   state: {
@@ -20,9 +22,11 @@ const store = new Vuex.Store({
     olmap: null,
     token: '',
     username: '',
-    friends: []
+    friends: [],
+    socket: null
   },
   mutations: {
+    [SET_SOCKET]: (state, socket) => (state.socket = socket),
     [SET_USERNAME]: (state, value) => (state.username = value),
     [SET_TOKEN]: (state, value) => (state.token = value),
     [SET_MAP]: (state, olmap) => (state.olmap = olmap),

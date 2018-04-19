@@ -1,4 +1,5 @@
-export const AUTH_URL = 'http://51.15.192.26:9000';
+export const AUTH_URL = 'https://redis-api.hurrycane.fr';
+export const SOCKET_URL = 'https://redis-ws.hurrycane.fr';
 export function getDpi() {
   var div = document.createElement('div');
   div.style.height = '1in';

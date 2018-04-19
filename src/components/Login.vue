@@ -84,9 +84,7 @@ export default {
           password: this.password,
           name: this.name
         })
-      }).then(response => {
-        console.log(response);
-      });
+      }).then(response => {});
     },
     login() {
       store

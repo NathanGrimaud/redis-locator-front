@@ -112,7 +112,6 @@ export default {
     const vector = new VectorLayer({
       source: position,
       style: feature => {
-        console.log(feature);
         return new Style({
           image: new IconStyle({
             src: 'https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-256.png',
@@ -137,8 +136,7 @@ export default {
       'change:resolution',
       debounce(function(event) {
         getFriendsForViewPort(olmap);
-      }),
-      1000
+      }, 1000)
     );
 
     navigator.geolocation.getCurrentPosition(
@@ -163,7 +161,7 @@ export default {
         err => console.log(err)
       );
     }
-    setInterval(getLocationAndSendIt, 6 * 1000);
+    setInterval(getLocationAndSendIt, 60 * 1000);
     getLocationAndSendIt();
 
     store.dispatch(CHECK_LOGIN).then(isLogged => {
@@ -184,7 +182,6 @@ export default {
           if (friend.shown) {
             setPoint(position, friend.location, olmap, vector, friend.name);
           }
-          setPoint(position, store.state.location, olmap, vector);
         });
       }
     );
